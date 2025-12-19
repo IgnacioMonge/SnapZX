@@ -133,4 +133,4 @@ After successfully receiving and writing the payload, the server sends an **appl
 
 - (C) 2025 **M. Ignacio Monge García**
 - Based on **LAIN** (C) 2022 **Alex Nihirash**
-- Created with Chat-GPT, DeepSeek and Claude.
+- Created with **Chat-GPT**, **DeepSeek** and **Claude**.
