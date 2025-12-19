@@ -1975,7 +1975,11 @@ cleanupAfterDone:
 
 ; --- Recoverable protocol abort ---
 ; Closes any open file, flushes RX noise, resets minimal state, and returns to recv.
+; IMPORTANT: Resets SP to prevent stack overflow after multiple consecutive errors.
 Wifi_ProtoAbort:
+    ; Reset stack pointer to prevent accumulation from repeated errors
+    ld sp, stack_top
+    
     ; Disable visual feedback and reset border
     xor a
     ld (visual_feedback_enabled), a
@@ -2002,7 +2006,11 @@ Wifi_ProtoAbort:
 ; --- Payload timeout abort ---
 ; Invoked when a timeout occurs while reading payload bytes (in-progress transfer).
 ; Closes any open file, deletes it, flushes RX noise, resets transfer state, and returns to recv.
+; IMPORTANT: Resets SP to prevent stack overflow after multiple consecutive errors.
 Wifi_PayloadTimeoutAbort:
+    ; Reset stack pointer to prevent accumulation from repeated errors
+    ld sp, stack_top
+    
     ; Disable visual feedback and reset border
     xor a
     ld (visual_feedback_enabled), a

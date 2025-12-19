@@ -21,21 +21,50 @@ setFilenameFromWifi:
     ld de, filename
     ld hl, Wifi.fname_buf
     ld b, 12
+    ld c, 1                  ; first output character flag (avoid leading space)
 .sf_loop
     ld a, (hl)
     or a
     jr z, .sf_done
+
+    ; Ensure filename does not start with a space (FAT compatibility)
+    cp 32                    ; ' '
+    jr nz, .sf_filter
+    ld a, c
+    or a
+    ld a, 32                 ; default: keep space (not first)
+    jr z, .sf_filter
+    ld a, '_'                ; first char was space -> '_'
+
+.sf_filter
+    ; Replace path separators and FAT-forbidden characters with '_'
     cp 47                    ; '/'
     jr z, .sf_us
     cp 92                    ; '\'
     jr z, .sf_us
+    cp 42                    ; '*'
+    jr z, .sf_us
+    cp 63                    ; '?'
+    jr z, .sf_us
+    cp 60                    ; '<'
+    jr z, .sf_us
+    cp 62                    ; '>'
+    jr z, .sf_us
+    cp 124                   ; '|'
+    jr z, .sf_us
+    cp 34                    ; '"'
+    jr z, .sf_us
     jr .sf_store
+
 .sf_us
     ld a, '_'
+
 .sf_store
     ld (de), a
     inc de
     inc hl
+    xor a
+    ld c, a                  ; after first stored char
     djnz .sf_loop
 .sf_done
     xor a
@@ -100,7 +129,46 @@ prepareFile:
 
 ;; HL - source pointer
 ;; BC - chunk size
+;; Returns: CF=0 on success, CF=1 on error (including size overflow)
 writeChunkPtr:
+    ; First check if this write would exceed MAX_SNA_SIZE (131103 = #1FFFF + header)
+    ; Calculate: total_written + BC and compare against MAX_SNA_SIZE
+    push hl
+    push bc
+    
+    ; Load total_written into DE:HL (32-bit)
+    ld hl, (total_written)
+    ld de, (total_written+2)
+    
+    ; Add BC to HL (low 16 bits)
+    add hl, bc
+    jr nc, .no_carry
+    inc de                    ; Propagate carry to high word
+.no_carry:
+    
+    ; Compare DE:HL against MAX_SNA_SIZE (0x0002001F = 131103)
+    ; If DE > 2, overflow
+    ld a, d
+    or a
+    jr nz, .overflow
+    ld a, e
+    cp 3
+    jr nc, .overflow          ; DE >= 3, definitely too big
+    cp 2
+    jr c, .size_ok            ; DE < 2, definitely OK
+    ; DE == 2, check HL <= #001F
+    ld a, h
+    or a
+    jr nz, .overflow          ; H != 0, too big
+    ld a, l
+    cp #20
+    jr nc, .overflow          ; L >= #20, too big
+    
+.size_ok:
+    pop bc
+    pop hl
+    
+    ; Proceed with actual write
     ld a, (fhandle)
     ld ix, hl
     push bc
@@ -118,6 +186,13 @@ writeChunkPtr:
     inc hl
     ld a, (hl) : adc a, 0 : ld (hl), a
     or a
+    ret
+
+.overflow:
+    pop bc
+    pop hl
+    printMsg msg_size_overflow
+    scf
     ret
 
 .fwrite_err_ptr
@@ -239,6 +314,7 @@ PrintHexA:
     ret
 
 msg_fwrite db "FWRITE error A=", 0
+msg_size_overflow db "ERROR: File too large (max 128K SNA)", 13, 0
 msg_fsync  db "FSYNC error A=", 0
 msg_fclose db "FCLOSE error A=", 0
 msg_exec   db "EXEC error A=", 0

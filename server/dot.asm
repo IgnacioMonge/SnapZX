@@ -152,6 +152,10 @@ ScreenInit:
 
 
 buffer = #C000
+
+; Stack top for reset on abort (just below buffer area)
+stack_top = #BFFE
+
      IFDEF DOT
         savebin "snapzx", text, $ - text
     ELSE
