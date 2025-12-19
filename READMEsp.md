@@ -92,8 +92,7 @@ El propio servidor incluye los créditos en pantalla al arrancar.
 
 ### Opción B: binario en RAM + loader BASIC
 1. Copia `server/snapzx.bin` y `server/SNAPZX.BAS` a la SD.
-2. Ejecuta el loader desde BASIC (el nombre exacto del programa dependerá del sistema de ficheros/ESXDOS):
-   - `LOAD "SNAPZX"`, luego `RUN`
+2. Ejecuta el loader "SNAPZX.BAS"
 
 ## Uso rápido
 
