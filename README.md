@@ -2,7 +2,7 @@
   <img src="images/logo.png" alt="SnapZX" width="640" />
 </p>
 
-> English translation here. Spanish version: [READMEsp.md](READMEsp.md)
+>Spanish version: [READMEsp.md](READMEsp.md)
 
 # SnapZX
 
