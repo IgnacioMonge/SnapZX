@@ -133,3 +133,4 @@ Al completar la recepción y escritura del payload, el servidor envía un **ACK 
 
 - (C) 2025 **M. Ignacio Monge García**
 - Basado en **LAIN** (C) 2022 **Alex Nihirash**
+- Creado con **Chat-GPT**, **DeepSeek** y **Claude**.
