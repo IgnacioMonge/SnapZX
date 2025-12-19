@@ -1004,12 +1004,15 @@ $script:TransferBlinkTimer.Add_Tick({
 })
 
 function Start-TransferBlink {
+    param(
+        [string]$Text = "Transferring"
+    )
     if ($script:form -and $script:form.InvokeRequired) {
-        $null = $script:form.BeginInvoke([Action]{ Start-TransferBlink })
+        $null = $script:form.BeginInvoke([Action]{ Start-TransferBlink -Text $Text })
         return
     }
     if (-not $picConn -or -not $lblConn -or -not $script:TransferBlinkTimer) { return }
-    $lblConn.Text = "Transfering"
+    $lblConn.Text = $Text
     $picConn.Visible = $true
     $script:TransferBlinkVisible = $true
     $script:TransferBlinkTimer.Start()
@@ -1027,6 +1030,28 @@ function Stop-TransferBlink {
     if ($lblConn) { $lblConn.Text = "Connection" }
 }
 
+
+
+function Update-TransferPhaseUi {
+    if ($script:form -and $script:form.InvokeRequired) {
+        $null = $script:form.BeginInvoke([Action]{ Update-TransferPhaseUi })
+        return
+    }
+    if (-not $progress -or -not $lblConn) { return }
+
+    if (-not $state.TransferActive) {
+        if (-not $progress.Visible) { $progress.Visible = $true }
+        return
+    }
+
+    switch ($state.Phase) {
+        "Connecting" { $lblConn.Text = "Connecting";   $progress.Visible = $true }
+        "Sending"    { $lblConn.Text = "Transferring"; $progress.Visible = $true }
+        "WaitingAck" { $lblConn.Text = "Waiting ACK";  $progress.Visible = $false }
+        "Finalizing" { $lblConn.Text = "Finalizing";   $progress.Visible = $false }
+        default      { $lblConn.Text = "Working";      $progress.Visible = $true }
+    }
+}
 
 $lblFile = New-Object System.Windows.Forms.Label
 $lblFile.Text = "Snapshot (.sna):"
@@ -1585,7 +1610,7 @@ function Start-SendWorkflow {
                 $progress.Value = 0
                 $picConn.Image = $bmpBlue
                 Set-UiBusy $true
-                Start-TransferBlink
+                Start-TransferBlink -Text "Connecting"
         
                 $lblStatus.Text = ("Status: ready to send {0} ({1}) to {2}:{3}." -f $snaName, $kind, $ip, $LAIN_PORT)
                 $lblStats.Text = "Speed: -- | ETA: -- | Transferred: --/$(Format-Bytes $state.Total)"
@@ -1690,7 +1715,7 @@ function Transfer-EngineTick {
                             $state.AckBuffer = ""
                             Set-TargetProgress $SEND_PROGRESS_MAX_PCT
                             $ui.ApplyProgress = $true
-                            $ui.StatusText = "Status: send complete. Waiting for Spectrum ACK..."
+                            $ui.StatusText = "Status: send complete. Waiting for ACK from Spectrum..."
                             break
                         }
                 
@@ -1813,7 +1838,7 @@ function Transfer-EngineTick {
                         Set-TargetProgress $p
                         $ui.ApplyProgress = $true
                 
-                        $ui.StatusText = "Status: Spectrum processing... waiting for ACK"
+                        $ui.StatusText = "Status: waiting for ACK from Spectrum..."
                         $buf = New-Object byte[] 256
                         try {
                             if ($state.Sock -and $state.Sock.Poll(0, [System.Net.Sockets.SelectMode]::SelectRead)) {
@@ -1944,6 +1969,8 @@ $timer.Add_Tick({
             Apply-SmoothedProgress
         }
 
+
+        Update-TransferPhaseUi
         if ($ui.RequestFail) {
             Fail-AndReset $ui.FailMessage $ui.FailDetail
         }
