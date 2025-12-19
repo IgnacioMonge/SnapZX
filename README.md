@@ -92,8 +92,7 @@ The server also shows credits on screen at startup.
 
 ### Option B: RAM binary + BASIC loader
 1. Copy `server/snapzx.bin` and `server/SNAPZX.BAS` to the SD card.
-2. Run the loader from BASIC (the exact program name may vary by filesystem/ESXDOS):
-   - `LOAD "SNAPZX"`, then `RUN`
+2. Run the loader from +3DOS "SNAPZX.BAS"
 
 ## Quick start
 
