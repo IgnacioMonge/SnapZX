@@ -87,7 +87,6 @@ transmitNext:
     or a
     rra 
     djnz transmitBit
-    exx
     ei
     pop bc, de, hl
     ret
