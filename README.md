@@ -39,6 +39,7 @@ Built with a "Select → Send → Play" philosophy, it eliminates the friction o
     ```basic
     .snapzx
     ```
+3. You can also use the SnapZX.BAS file from NMI file broswer in esxDOS.    
 
 ### PC Side (Client)
 1.  Download `SnapZX.exe` from the latest release.
