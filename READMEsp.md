@@ -39,6 +39,7 @@ Diseñado bajo la filosofía "Seleccionar → Enviar → Jugar", elimina la fric
     ```basic
     .snapzx
     ```
+3. También puedes ejecutar el fichero SnapZX.BAS desde el navegador de ficheros de esxDOS. 
 
 ### Lado PC (Cliente)
 1.  Descarga `SnapZX.exe` de la última release.
